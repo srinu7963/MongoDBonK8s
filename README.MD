@@ -1,4 +1,4 @@
-# MongoDB HA Cluster on Kubernetes 🚀
+# MongoDB HA Cluster (Kubernetes) 🚀
 
 Welcome to the **MongoDB High Availability (HA) Cluster** project on Kubernetes! This repository contains all the necessary configuration files and instructions to deploy a robust MongoDB cluster with high availability on a Kubernetes cluster. 
 
