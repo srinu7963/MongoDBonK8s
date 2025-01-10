@@ -1,75 +1,87 @@
-kubectl create secret generic mongodb-keyfile --from-file=mongodb-keyfile
+# MongoDB HA Cluster on Kubernetes 🚀
 
+Welcome to the **MongoDB High Availability (HA) Cluster** project on Kubernetes! This repository contains all the necessary configuration files and instructions to deploy a robust MongoDB cluster with high availability on a Kubernetes cluster. 
 
+## 📁 Repository Files
 
-kubectl exec -it mongodb-0 -- mongosh
+Here's an overview of the files in this repository:
 
-rs.initiate({
-  _id: "rs0",
-  members: [
-    { _id: 0, host: "mongodb-0.mongodb-service:27017", priority: 2 },
-    { _id: 1, host: "mongodb-1.mongodb-service:27017", priority: 1 },
-    { _id: 2, host: "mongodb-2.mongodb-service:27017", priority: 1 }
-  ]
-})
+- **`pv-pvc.yaml`**: PersistentVolume (PV) and PersistentVolumeClaim (PVC) definitions for MongoDB data storage.
+- **`svc.yaml`**: Service configurations to expose MongoDB pods internally within the cluster.
+- **`sts.yaml`**: StatefulSet configuration for managing MongoDB pods.
+- **`Bkp_pv-pvc.yaml`**: PV and PVC definitions for backup storage.
+- **`Bkp_cronjob.yaml`**: CronJob definition to automate MongoDB backups. ⏱️
+- **`AccessBkp.yaml`**: Configuration to provide secure access to backup files. 🔒
+- **`svc-hl.yaml`**: High-level Service configuration for external access to the MongoDB cluster.
 
+## 📜 Prerequisites
 
+Ensure the following are set up in your environment:
 
-=============
+1. **Kubernetes Cluster**: A functioning Kubernetes cluster (v1.20+ recommended).
+2. **kubectl**: Kubernetes command-line tool installed and configured.
+3. **Storage Class**: A valid storage class configured for PV provisioning.
 
-Begin by identifying the current primary node:
-kubectl exec -it mongodb-0 -- mongosh --eval "rs.status()"
+## 🚀 Deployment Steps
 
-Look for the member with the "stateStr" : "PRIMARY" attribute:
-{
-  "_id" : 0,
-  "name" : "mongodb-0.mongodb-service:27017",
-  "stateStr" : "PRIMARY",
-  ...
-}
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/yourusername/mongodb-ha-cluster-k8s.git
+   cd mongodb-ha-cluster-k8s
+   ```
 
-Simulate a failure by deleting the current primary node pod:
-kubectl delete pod mongodb-0
+2. **Apply PV and PVC Configurations**:
+   ```bash
+   kubectl apply -f pv-pvc.yaml
+   ```
 
-Monitor the status of the replica set and observe the election of a new primary:
-kubectl exec -it mongodb-1 -- mongosh --eval "rs.status()"
+3. **Deploy MongoDB StatefulSet**:
+   ```bash
+   kubectl apply -f sts.yaml
+   ```
 
-You should see that one of the secondary nodes has been promoted to primary:
-{
-  "_id" : 1,
-  "name" : "mongodb-1.mongodb-service:27017",
-  "stateStr" : "PRIMARY",
-  ...
-}
+4. **Expose MongoDB Services**:
+   ```bash
+   kubectl apply -f svc.yaml
+   kubectl apply -f svc-hl.yaml
+   ```
 
-Verify that the deleted pod has been recreated and rejoined the replica set as a secondary node:
-kubectl get pods
+5. **Set Up Backups**:
+   - Deploy backup storage:
+     ```bash
+     kubectl apply -f Bkp_pv-pvc.yaml
+     ```
+   - Schedule automated backups:
+     ```bash
+     kubectl apply -f Bkp_cronjob.yaml
+     ```
 
-Confirm that the pod is back and running:
-NAME                       READY   STATUS     RESTARTS     	AGE
-mongodb-0                       1/1     Running     0         		 70s
-mongodb-1                       1/1     Running     0          		77m
-mongodb-2                       1/1     Running     0         		 73m
+6. **Secure Access to Backups**:
+   ```bash
+   kubectl apply -f AccessBkp.yaml
+   ```
 
-Check the replica set status again to ensure the new node is now re-elected as the primary since it had the highest priority:
-kubectl exec -it mongodb-0 -- mongosh --eval "rs.status()"
+## 📊 Monitoring and Maintenance
 
-You should see:
-{
-  "_id" : 0,
-  "name" : "mongodb-0.mongodb-service:27017",
-  "stateStr" : "PRIMARY",
-  ...
-}
+- Use Kubernetes commands to monitor the deployment:
+  ```bash
+  kubectl get pods
+  kubectl get svc
+  ```
+- Inspect logs for any issues:
+  ```bash
+  kubectl logs <pod-name>
+  ```
 
+## 🙌 Contributions
 
-==========
+Contributions are welcome! Feel free to submit a pull request or open an issue to discuss potential changes.
 
-For AutoScaling :
+## 📄 License
 
-kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+---
 
-kubectl autoscale statefulset mongodb --min=3 --max=10 --cpu-percent=50
-
+🌟 **Thank you for using this project!** If you find it helpful, give the repository a star to show your support! ⭐
 
