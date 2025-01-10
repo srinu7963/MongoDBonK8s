@@ -1,4 +1,4 @@
-# MongoDB HA Cluster on Kubernetes 🚀
+# MongoDB HA Cluster (Kubernetes) 🚀
 
 Welcome to the **MongoDB High Availability (HA) Cluster** project on Kubernetes! This repository contains all the necessary configuration files and instructions to deploy a robust MongoDB cluster with high availability on a Kubernetes cluster. 
 
@@ -26,7 +26,7 @@ Ensure the following are set up in your environment:
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/yourusername/mongodb-ha-cluster-k8s.git
+   git clone https://github.com/srinu7963/MongoDBonK8s.git
    cd mongodb-ha-cluster-k8s
    ```
 
@@ -79,7 +79,7 @@ Contributions are welcome! Feel free to submit a pull request or open an issue t
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the Anjoori License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
