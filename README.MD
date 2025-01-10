@@ -26,7 +26,7 @@ Ensure the following are set up in your environment:
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/yourusername/mongodb-ha-cluster-k8s.git
+   git clone https://github.com/srinu7963/MongoDBonK8s.git
    cd mongodb-ha-cluster-k8s
    ```
 
