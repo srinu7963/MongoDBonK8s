@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "mongodb-ha.fullname" . }}
+  labels:
+    {{- include "mongodb-ha.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ .Release.Name }}-service
+  replicas: {{ .Values.mongodb.replicas }}
+  selector:
+    matchLabels:
+      {{- include "mongodb-ha.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "mongodb-ha.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.mongodb.image.repository }}:{{ .Values.mongodb.image.tag }}"
+        imagePullPolicy: {{ .Values.mongodb.image.pullPolicy }}
+        command:
+        - mongod
+        - "--replSet"
+        - {{ .Values.mongodb.replicaSet.name }}
+        - "--bind_ip_all"
+        ports:
+        - containerPort: {{ .Values.mongodb.service.port }}
+        volumeMounts:
+        - name: mongodb-storage
+          mountPath: /data/db
+        - name: keyfile
+          mountPath: /etc/mongodb-keyfile
+          readOnly: true
+        resources:
+          {{- toYaml .Values.mongodb.resources | nindent 12 }}
+      volumes:
+      - name: keyfile
+        secret:
+          secretName: {{ .Release.Name }}-keyfile
+          defaultMode: 0400
+  volumeClaimTemplates:
+  - metadata:
+      name: mongodb-storage
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: {{ .Values.mongodb.storage.size }}

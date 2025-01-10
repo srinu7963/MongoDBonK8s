@@ -1,0 +1,17 @@
+MongoDB HA cluster has been deployed!
+
+1. Get the MongoDB service name:
+  export SERVICE_NAME={{ .Release.Name }}-service
+
+2. Connect to MongoDB using:
+  kubectl exec -it {{ include "mongodb-ha.fullname" . }}-0 -- mongo
+
+3. To initialize the replica set, connect to the first pod and run:
+  rs.initiate({
+    _id: "{{ .Values.mongodb.replicaSet.name }}",
+    members: [
+      { _id: 0, host: "{{ include "mongodb-ha.fullname" . }}-0.${SERVICE_NAME}:{{ .Values.mongodb.service.port }}" },
+      { _id: 1, host: "{{ include "mongodb-ha.fullname" . }}-1.${SERVICE_NAME}:{{ .Values.mongodb.service.port }}" },
+      { _id: 2, host: "{{ include "mongodb-ha.fullname" . }}-2.${SERVICE_NAME}:{{ .Values.mongodb.service.port }}" }
+    ]
+  })

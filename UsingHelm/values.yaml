@@ -1,0 +1,26 @@
+mongodb:
+  name: mongodb
+  image:
+    repository: mongo
+    tag: latest
+    pullPolicy: IfNotPresent
+  
+  replicas: 3
+  
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+
+  storage:
+    size: 5Gi
+    hostPath: /data/mongodb
+    
+  service:
+    port: 27017
+
+  replicaSet:
+    name: rs0
