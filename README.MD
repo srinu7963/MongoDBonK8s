@@ -179,7 +179,9 @@ rs.initiate({
  
  
 rs0 [direct: primary] test> rs.status()
- ====================================
+
+
+====================================
  
 Restoring backups:
 kubectl cp 2025-01-25T00-00-03/ mongodb-0:/data/db/backup -n mongo
