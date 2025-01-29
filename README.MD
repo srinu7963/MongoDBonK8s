@@ -42,7 +42,6 @@ Ensure the following are set up in your environment:
 
 4. **Expose MongoDB Services**:
    ```bash
-   kubectl apply -f svc.yaml
    kubectl apply -f svc-hl.yaml
    ```
 
@@ -84,4 +83,115 @@ This project is licensed under the Anjoori License - see the [LICENSE](LICENSE) 
 ---
 
 🌟 **Thank you for using this project!** If you find it helpful, give the repository a star to show your support! ⭐
+
+The Steps: 
+
+MongoDb E2E with HA:
+ 
+ 
+mkdir mongoDb1
+cd mongoDb1/
+kubectl get nodes
+ 
+kubectl create ns mongo
+ 
+vi pv_pvc.yaml
+kubectl apply -f pv_pvc.yaml -n mongo
+ 
+kubectl get pvc
+kubectl get pv
+ 
+vi mongosv.yaml
+kubectl apply -f mongosv.yaml -n mongo
+kubectl get svc -n mongo
+ 
+bash -c "openssl rand -base64 756 > mongodb-keyfile"
+ls -lrtha
+sudo chmod 400 mongodb-keyfile
+ls -lrtha
+more mongodb-keyfile
+ 
+kubectl create secret generic mongodb-keyfile --from-file=mongodb-keyfile -n mongo
+ 
+vi mongo_sfs.yaml
+kubectl apply -f mongo_sfs.yaml -n mongo
+kubectl get svc -n mongo
+ 
+kubectl exec -it mongodb-0 -n mongo -- mongosh
+ 
+kubectl exec -it mongodb-0 -n mongo -- mongosh
+ 
+vi backup_pv_pvc.yaml
+kubectl apply -f backup_pv_pvc.yaml -n mongo
+ 
+kubectl get pv -n mongo
+kubectl get pvc -n mongo
+ 
+vi mongodb_bkup_cron.yaml
+kubectl apply -f mongodb_bkup_cron.yaml -n mongo
+kubectl get cronjob -nmongo
+ 
+vi access_bkup.yaml
+kubectl apply -f access_bkup.yaml -n mongo
+ 
+kubectl exec -it backup-access -n mongo -- /bin/sh
+ 
+kubectl exec -it mongodb-0 -n mongo -- mongosh --eval "rs.status()"
+ 
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+ 
+kubectl edit deployment metrics-server -n kube-system
+kubectl edit deployment metrics-server -n kube-system
+ 
+kubectl top pods -n mongo
+ 
+ 
+kubectl autoscale statefulset mongodb --min=3 --max=10 --cpu-percent=50 -n mongo
+kubectl get hpa -n mongo
+kubectl get all -n mongo
+
+ 
+===================================================
+ 
+troubleshoot & restart whole...
+ 
+
+kubectl get hpa -n mongo
+kubectl delete -f pv_pvc.yaml
+kubectl apply -f pv_pvc.yaml -n mongo
+kubectl apply -f mongosv.yaml -n mongo
+kubectl apply -f mongo_sfs.yaml -n mongo
+kubectl get all -n mongo
+kubectl scale statefulset mongodb -n mongo --replicas=0
+kubectl delete pvc -n mongo -l app=mongodb
+kubectl scale statefulset mongodb -n mongo --replicas=3
+kubectl get pods -n mongo
+kubectl exec -it mongodb-0 -n mongo -- mongosh
+rs.initiate({
+  _id: "rs0",
+  version: 1,
+  members: [
+    { _id: 0, host: "mongodb-0.mongodb-service.mongo.svc.cluster.local:27017" },
+    { _id: 1, host: "mongodb-1.mongodb-service.mongo.svc.cluster.local:27017" },
+    { _id: 2, host: "mongodb-2.mongodb-service.mongo.svc.cluster.local:27017" }
+  ]
+})
+ 
+ 
+rs0 [direct: primary] test> rs.status()
+ ====================================
+ 
+Restoring backups:
+kubectl cp 2025-01-25T00-00-03/ mongodb-0:/data/db/backup -n mongo
+ 
+kubectl delete hpa mongodb -n mongo
+kubectl autoscale statefulset mongodb --min=1 --max=10 --cpu-percent=50 -n mongo
+kubectl scale statefulset mongodb -n mongo --replicas=1
+kubectl patch hpa mongodb -n mongo -p '{"spec":{"minReplicas":1}}'
+ 
+kubectl exec -it mongodb-0 -n mongo -- /bin/bash
+ 
+mongorestore --host localhost --port 27017 /data/db/backup
+or
+mongorestore --host localhost --port 27017 --username <username> --password <password> /data/db/backup
 
